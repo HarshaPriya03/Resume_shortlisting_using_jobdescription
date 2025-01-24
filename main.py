@@ -6,7 +6,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads/'
+# app.config['UPLOAD_FOLDER'] = 'uploads/'  
+app.config['RESUME_FOLDER'] = 'input_resume/' 
+
 
 def extract_text_from_pdf(file_path):
     text = ""
@@ -41,29 +43,29 @@ def matchresume():
 def matcher():
     if request.method == 'POST':
         job_description = request.form['job_description']
-        resume_files = request.files.getlist('resumes')
+
+        resume_files = [f for f in os.listdir(app.config['RESUME_FOLDER']) if f.endswith(('.pdf', '.docx', '.txt'))]
 
         resumes = []
         for resume_file in resume_files:
-            filename = os.path.join(app.config['UPLOAD_FOLDER'], resume_file.filename)
-            resume_file.save(filename)
+            filename = os.path.join(app.config['RESUME_FOLDER'], resume_file)
             resumes.append(extract_text(filename))
 
         if not resumes or not job_description:
-            return render_template('matchresume.html', message="Please upload resumes and enter a job description.")
+            return render_template('matchresume.html', message="Please provide a job description and make sure the resume folder is populated.")
 
-        # Vectorize job description and resumes
+        
         vectorizer = TfidfVectorizer().fit_transform([job_description] + resumes)
         vectors = vectorizer.toarray()
 
-        # Calculate cosine similarities
+       
         job_vector = vectors[0]
         resume_vectors = vectors[1:]
         similarities = cosine_similarity([job_vector], resume_vectors)[0]
 
-        # Get top 3 resumes and their similarity scores
+        
         top_indices = similarities.argsort()[-5:][::-1]
-        top_resumes = [resume_files[i].filename for i in top_indices]
+        top_resumes = [resume_files[i] for i in top_indices]
         similarity_scores = [round(similarities[i], 2) for i in top_indices]
 
         return render_template('matchresume.html', message="Top matching resumes:", top_resumes=top_resumes, similarity_scores=similarity_scores)
@@ -71,6 +73,6 @@ def matcher():
     return render_template('matchresume.html')
 
 if __name__ == '__main__':
-    if not os.path.exists(app.config['UPLOAD_FOLDER']):
-        os.makedirs(app.config['UPLOAD_FOLDER'])
+    if not os.path.exists(app.config['RESUME_FOLDER']):
+        os.makedirs(app.config['RESUME_FOLDER'])
     app.run(debug=True)

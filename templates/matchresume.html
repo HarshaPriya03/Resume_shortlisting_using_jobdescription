@@ -38,16 +38,17 @@
                 <h2>Job Description and Resume Matcher</h2>
             </div>
             <div class="card-body">
-                <form method="POST" action="/matcher" enctype="multipart/form-data">
+                <!-- <form method="POST" action="/matcher" enctype="multipart/form-data"> -->
+                    <form method="POST" action="/matcher">
                     <div class="form-group">
                         <label for="job_description">Job Description:</label>
                         <textarea class="form-control" id="job_description" name="job_description" rows="5" required></textarea>
                     </div>
-                    <div class="form-group">
+                    <!-- <div class="form-group">
                         <label for="resumes">Upload Resumes:</label>
                         <p>Please Upload Resumes More than 5...........</p>
                         <input type="file" class="form-control" id="resumes" name="resumes" multiple required accept=".pdf, .docx, .txt">
-                    </div>
+                    </div> -->
                     <button type="submit" class="btn btn-primary">Match Resumes</button>
                 </form>
                 {% if message %}
